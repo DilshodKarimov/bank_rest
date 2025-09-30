@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - include:
+      file: changes/001-create-users.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/002-create-roles.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/003-create-user-roles.sql
+      relativeToChangelogFile: true
+  - include:
+      file: changes/004-create-cards.sql
+      relativeToChangelogFile: true
