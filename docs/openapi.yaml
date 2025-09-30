@@ -1,0 +1,419 @@
+openapi: 3.0.1
+info:
+  title: Bank RestAPI
+  description: Документация API для Bank rest
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+tags:
+- name: CardController
+  description: Работа с картами
+- name: AuthController
+  description: Контроллер для регистрации и авторизации
+paths:
+  /registration:
+    post:
+      tags:
+      - AuthController
+      summary: Регистрация
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /registration-admin:
+    post:
+      tags:
+      - AuthController
+      summary: Создает админа, но нужно ввести код
+      operationId: createUser_1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationAdminDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /card/transactions:
+    post:
+      tags:
+      - CardController
+      description: Перевод денег
+      operationId: transactions
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransactionsDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /auth:
+    post:
+      tags:
+      - AuthController
+      summary: Авторизация
+      operationId: createAuthToken
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JwtRequestDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /admin/card/create:
+    post:
+      tags:
+      - AdminController
+      description: Создает пользователю карту
+      operationId: createCard
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCardDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /card/{id}:
+    get:
+      tags:
+      - CardController
+      description: Получает данные карты
+      operationId: getCardById
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    patch:
+      tags:
+      - CardController
+      description: Блокирует карту
+      operationId: blockCard
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /admin/card/{id}:
+    get:
+      tags:
+      - AdminController
+      description: Получает данные карты с поммощью айди
+      operationId: getCardById_1
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    delete:
+      tags:
+      - AdminController
+      description: Удаляет карту
+      operationId: deleteCard
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    patch:
+      tags:
+      - AdminController
+      description: "Изменяет статус карты, если хотите продлить нужно указать дату\
+        \ окончания"
+      operationId: changeStatus
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: cardStatusDTO
+        in: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/CardStatusDTO"
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /card/:
+    get:
+      tags:
+      - CardController
+      description: Возвращает карты авторизированного пользователя
+      operationId: getMyCards
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /admin/user/{id}:
+    get:
+      tags:
+      - admin-user-controller
+      description: Переносит вас в /admin/card/user/
+      operationId: getUsersCard
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+  /admin/user/:
+    get:
+      tags:
+      - admin-user-controller
+      description: Получает всех пользователей и админов
+      operationId: getUsers
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /admin/card/{id}/user:
+    get:
+      tags:
+      - AdminController
+      description: "Вернет пользователя с помощью айди карты"
+      operationId: getUserByCardId
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+  /admin/card/user/{id}:
+    get:
+      tags:
+      - AdminController
+      description: "Вернеет карты пользователя"
+      operationId: getCardByUserId
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /admin/card/:
+    get:
+      tags:
+      - AdminController
+      description: Возвращает все карты
+      operationId: getCards
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+components:
+  schemas:
+    RegistrationDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        confirmPassword:
+          type: string
+    RegistrationAdminDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        confirmPassword:
+          type: string
+        code:
+          type: string
+    TransactionsDTO:
+      type: object
+      properties:
+        fromId:
+          type: integer
+          format: int64
+        toCardNumber:
+          type: string
+        description:
+          type: string
+        amount:
+          type: integer
+          format: int64
+    JwtRequestDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    CreateCardDTO:
+      type: object
+      properties:
+        expired:
+          type: string
+          format: date
+        username:
+          type: string
+        balance:
+          type: integer
+          format: int64
+    CardStatusDTO:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+          - ACTIVE
+          - BLOCKED
+          - EXPIRED
+        expiryDate:
+          type: string
+          format: date
