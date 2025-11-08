@@ -13,11 +13,6 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
 
-    @PostConstruct
-    public void init() {
-        createRoleIfNotExists("ROLE_USER");
-        createRoleIfNotExists("ROLE_ADMIN");
-    }
 
     private void createRoleIfNotExists(String roleName){
         if(!roleRepository.findByName(roleName).isPresent()){

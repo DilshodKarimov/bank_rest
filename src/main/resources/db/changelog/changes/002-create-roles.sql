@@ -4,12 +4,11 @@
 
 CREATE TABLE IF NOT EXISTS public.roles
 (
-    id integer NOT NULL,
-    name character varying(255) COLLATE pg_catalog."default",
-    CONSTRAINT roles_pkey PRIMARY KEY (id)
-)
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) UNIQUE NOT NULL
+);
 
-TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS public.roles
-    OWNER to postgres;
+INSERT INTO public.roles (name)
+VALUES
+    ('ROLE_ADMIN'),
+    ('ROLE_USER');

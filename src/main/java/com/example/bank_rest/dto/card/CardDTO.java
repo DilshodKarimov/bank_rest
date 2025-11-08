@@ -16,7 +16,7 @@ public class CardDTO {
 
 
     public void setCardNumber(String cardNumber){
-        String q = cardNumber.substring(cardNumber.length()-5);
+        String q = cardNumber.substring(cardNumber.length()-4);
         this.cardNumber += " " + q;
     }
 }

@@ -46,9 +46,15 @@ public class AdminCardService {
     }
 
     public ResponseEntity<?> changeStatus(Long id, CardStatusDTO cardStatusDTO){
-        Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Карта с таким id не существует!"));
+        Card card;
 
+        try {
+             card = cardRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Карта с таким id не существует!"));
+        }
+        catch (RuntimeException e){
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
         if(card.getStatus() == CardStatus.EXPIRED && cardStatusDTO.getStatus() == CardStatus.ACTIVE){
             if(cardStatusDTO.getExpiryDate() == null){
                 String message = "Для того чтобы продлить карту нужно указать новый срок карты!";
@@ -63,18 +69,32 @@ public class AdminCardService {
     }
 
     public ResponseEntity<?> deleteCard(Long id){
-        Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Карта с таким id не существует!"));
+        Card card;
 
+        try{
+            card = cardRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Карта с таким id не существует!"));
+
+        }
+        catch (RuntimeException e) {
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
         cardRepository.deleteById(id);
 
         return ResponseEntity.ok(new DeleteResponseDTO());
     }
 
-    public String getUserByCardId(Long id){
-        Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Карта с таким id не существует!"));
-        return card.getUser().getId().toString();
+    public ResponseEntity<?> getUserByCardId(Long id){
+        Card card;
+        try {
+            card = cardRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Карта с таким id не существует!"));
+        }
+        catch (RuntimeException e){
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
+        String redirect = "redirect:/admin/user/" + card.getUser().getId().toString();
+        return ResponseEntity.ok(redirect);
     }
 
     public ResponseEntity<?> getCardByUserId(Long id, int page, int size){
@@ -83,13 +103,19 @@ public class AdminCardService {
         int right = page*size-1;
 
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Пользователя с таким id нет!"));
+        User user;
+        try {
+            user = userRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Пользователя с таким id нет!"));
+        }
+        catch (RuntimeException e){
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
 
         List<Card> cardList = cardRepository.findByUser(user);
 
         if(page <= 0 || size <= 0){
-            String message = "Плохой запрос!";
+            String message = "Плохой запрос c пагинацией!";
             return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
         }
 
@@ -112,8 +138,14 @@ public class AdminCardService {
         card.setBalance(createCardDTO.getBalance());
         card.setExpiryDate(createCardDTO.getExpired());
         card.setStatus(CardStatus.ACTIVE);
-        User user = userRepository.findByUsername(createCardDTO.getUsername())
-                        .orElseThrow(() -> new RuntimeException("Пользователь с таким именем не найден!"));
+        User user;
+        try {
+            user = userRepository.findByUsername(createCardDTO.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Пользователь с таким именем не найден!"));
+        }
+        catch (RuntimeException e){
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
+        }
         card.setUser(user);
         cardRepository.save(card);
         card.setCardNumber(createCardNumber(card.getId()));

@@ -4,13 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public.users
 (
-    user_id bigint NOT NULL,
+    user_id SERIAL PRIMARY KEY,
     password character varying(255) COLLATE pg_catalog."default",
-    username character varying(255) COLLATE pg_catalog."default",
-    CONSTRAINT users_pkey PRIMARY KEY (user_id)
-)
-
-TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS public.users
-    OWNER to postgres;
+    username character varying(255) COLLATE pg_catalog."default"
+);

@@ -2,11 +2,14 @@ package com.example.bank_rest.service;
 
 import com.example.bank_rest.dto.auth.RegistrationDTO;
 import com.example.bank_rest.entity.User;
+import com.example.bank_rest.exception.AppError;
 import com.example.bank_rest.repository.RoleRepository;
 import com.example.bank_rest.repository.UserRepository;
 import com.example.bank_rest.util.JwtTokenUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -47,9 +50,14 @@ public class UserService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(
-                String.format("Пользователь '%s' не найден", username)
-        ));
+        User user;
+        try {
+            user = findByUsername(username).orElseThrow(() -> new RuntimeException(
+                String.format("Пользователь '%s' не найден", username)));
+        }
+        catch (RuntimeException e){
+            return null;
+        }
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),

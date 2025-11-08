@@ -44,15 +44,6 @@ public class Card {
             }
         }
     }
-
-//    @PrePersist
-//    private void createCardNumber(){
-//        String a = this.id.toString();
-//        String zero = a.repeat(12-a.length());
-//        this.cardNumber = zero+a;
-//    }
-
-
 }
 
 
