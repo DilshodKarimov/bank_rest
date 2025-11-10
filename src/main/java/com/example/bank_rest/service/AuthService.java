@@ -54,6 +54,10 @@ public class AuthService {
             String message = "Неправильный логин или пароль!";
             return  new ResponseEntity<>(new AppError(HttpStatus.UNAUTHORIZED.value(),message), HttpStatus.UNAUTHORIZED);
         }
+        catch (RuntimeException e){
+            String message = "Неправильный логин или пароль!";
+            return  new ResponseEntity<>(new AppError(HttpStatus.UNAUTHORIZED.value(),message), HttpStatus.UNAUTHORIZED);
+        }
 
         UserDetails userDetails = userService.loadUserByUsername(jwtRequestDTO.getUsername());
         String token = jwtTokenUtils.generateToken(userDetails);

@@ -38,6 +38,7 @@ public class AuthController {
 
 
     /**
+    * Авторизация пользователей
     *
     * @param jwtRequestDTO - данныее для (авторизации) получения токена
     * @return {@link ResponseEntity}, содержащий один из следующих результатов:

@@ -25,6 +25,16 @@ services:
       - "5433:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
+  test:
+    build: .
+    container_name: spring-test
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bank_rest_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: 1
+    command: [ "./mvnw", "test" ]
 
 volumes:
   db_data:
