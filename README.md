@@ -1,14 +1,12 @@
-<<<<<<< HEAD
-# bank_rest
-=======
 # Bank REST API
 
-REST API для работы с банковскими пользователями и ролями, построенное на Spring Boot, с управлением схемы базы данных через Liquibase и интеграцией Docker.
+**REST API** для работы с банковскими пользователями и ролями, построенное на **Spring Boot**, с управлением схемы базы данных через **Liquibase** и интеграцией Docker. В проекте реализованы тесты с использованием **JUnit 5**.
 
 ![Java](https://img.shields.io/badge/Java-17-blue)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-green)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue)
 ![Docker](https://img.shields.io/badge/Docker-Yes-lightgrey)
+![JUnit 5](https://img.shields.io/badge/JUnit-5-red)
 
 ---
 
@@ -17,16 +15,17 @@ REST API для работы с банковскими пользователя�
 - Spring Boot REST API
 - Управление схемой базы данных через **Liquibase**
 - Документация API через **Springdoc OpenAPI / Swagger**
-- Возможность запуска через **Docker Compose** 
-
+- Возможность запуска через **Docker Compose**
+- Тесты с использованием **JUnit 5**
 ---
 
 ## ⚙️ Требования
 
-- Java JDK 17
+- Java JDK 20
 - Maven (для сборки локально)
 - Docker & Docker Compose (рекомендуется)
 - PostgreSQL (если запускаем без Docker)
+- JUnit 5
 
 ---
 
@@ -45,12 +44,19 @@ REST API для работы с банковскими пользователя�
 ### Через Docker (рекомендуется)
 
 1. Разархивируйте проект.
+```bash
+git clone https://github.com/DilshodKarimov/bank_rest.git
+```
+
 2. Перейдите в корневую папку проекта.
-3. Соберите и запустите контейнеры:
+```bash
+cd bank_rest 
+```
+3. Соберите и запустите приложение:
 
 ```bash
 docker compose build
-docker compose up
+docker compose up app 
 ```
 После запуска:
 
@@ -59,6 +65,14 @@ API доступен по адресу: http://localhost:8080
 Swagger UI: http://localhost:8080/swagger-ui/index.html
 
 YAML спецификация OpenAPI: http://localhost:8080/v3/api-docs.yaml
+
+4. Запуситить тесты:
+```bash
+docker compose build
+docker compose up spring-tests
+# или 
+mvn test 
+```
 
 ---
 ### 📂 Структура проекта
@@ -81,5 +95,7 @@ src/
  │       └─ db/changelog/db.changelog-master.yaml
  │       └─ db/changelog/
  │           └─ changes/
+ ├─ test/java/com/example/bank_rest/
+ │  └─ controller/
 ```
 ---

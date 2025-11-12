@@ -10,7 +10,7 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
   application:
-    name=task-manager:
+    name: "task-manager"
   datasource:
     url: jdbc:postgresql://localhost:5432/bank_rest_db
     username: postgres
@@ -25,7 +25,5 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  mvc:
-    static-path-pattern=/static/**:
   main:
     allow-circular-references: true
