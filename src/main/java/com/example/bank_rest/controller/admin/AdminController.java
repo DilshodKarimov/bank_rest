@@ -3,11 +3,14 @@ package com.example.bank_rest.controller.admin;
 import com.example.bank_rest.dto.card.CardDTO;
 import com.example.bank_rest.dto.card.CardStatusDTO;
 import com.example.bank_rest.dto.card.CreateCardDTO;
+import com.example.bank_rest.dto.card.DeleteResponseDTO;
+import com.example.bank_rest.exception.NotFoundException;
 import com.example.bank_rest.service.admin.AdminCardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -43,6 +46,7 @@ public class AdminController {
      *
      * @param id - id карты
      * @return <b>200 OK</b>
+     * @throws NotFoundException - В случае если id не найден
      */
     @GetMapping("/{id}")
     @Operation(description = "Получает данные карты с поммощью айди")
@@ -58,8 +62,9 @@ public class AdminController {
      * @return {@link ResponseEntity}, содержащий один из следующих результатов:
      * <ul>
      *   <li><b>200 OK</b> — успешно изменен статус, тело содержит {@link CardDTO}</li>
-     *   <li><b>400 Bad Request</b> — в случае если не найдена карта или не указана дата </li>
+     *   <li><b>400 Bad Request</b> — в случае если не указана дата </li>
      * </ul>
+     * @throws NotFoundException - В случае если карта не найдена
      */
     @PatchMapping("/{id}")
     @Operation(description = "Изменяет статус карты, если хотите продлить нужно указать дату окончания")
@@ -71,11 +76,8 @@ public class AdminController {
      * Удалям карту
      *
      * @param id - id карты
-     * @return {@link ResponseEntity}, содержащий один из следующих результатов:
-     * <ul>
-     *   <li><b>200 OK</b> — успешно удален </li>
-     *   <li><b>400 Bad Request</b> — в случае если не найдена карта </li>
-     * </ul>
+     * @return <b>200 OK</b> — успешно удален, тело содержит {@link DeleteResponseDTO}
+     * @throws NotFoundException - В случае если карта не найдена
      */
     @DeleteMapping("/{id}")
     @Operation(description = "Удаляет карту")
@@ -88,11 +90,8 @@ public class AdminController {
      * Возвращает пользователя карты
      *
      * @param id - id карты
-     * @return {@link ResponseEntity}, содержащий один из следующих результатов:
-     * <ul>
-     *   <li><b>200 OK</b> — успешная работа и преносит на страницу пользователя </li>
-     *   <li><b>400 Bad Request</b> — в случае если не найдена карта </li>
-     * </ul>
+     * @return <b>200 OK</b> — успешная работа и преносит на страницу пользователя
+     * @throws NotFoundException - в случае если не найдена карта
      */
     @GetMapping("/{id}/user")
     @Operation(description = "Вернет пользователя с помощью айди карты")
@@ -108,8 +107,9 @@ public class AdminController {
      * @return {@link ResponseEntity}, содержащий один из следующих результатов:
      * <ul>
      *   <li><b>200 OK</b> — если карты найдены </li>
-     *   <li><b>400 Bad Request</b> — в случае если page и size заданы неправльно или id пользователя не найден </li>
+     *   <li><b>400 Bad Request</b> — в случае если page и size заданы неправльно или  </li>
      * </ul>
+     * @throws NotFoundException - в случае если id пользователя не найден!
      */
     @GetMapping("/user/{id}")
     @Operation(description = "Вернеет карты пользователя")
@@ -123,11 +123,8 @@ public class AdminController {
      * Создает пользователю карту
      *
      * @param createCardDTO - данные чтобы создать карту
-     * @return {@link ResponseEntity}, содержащий один из следующих результатов:
-     * <ul>
-     *   <li><b>200 OK</b> — если созадаст карту </li>
-     *   <li><b>400 Bad Request</b> — в случае если id пользователя не найден </li>
-     * </ul>
+     * @return <b>200 OK</b> — если созадаст карту
+     * @throws UsernameNotFoundException -  в случае если id пользователя не найден
      */
     @PostMapping("/create")
     @Operation(description = "Создает пользователю карту")

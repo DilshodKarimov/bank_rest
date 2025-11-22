@@ -2,11 +2,13 @@ package com.example.bank_rest.controller;
 
 import com.example.bank_rest.dto.card.CardDTO;
 import com.example.bank_rest.dto.card.TransactionsDTO;
+import com.example.bank_rest.exception.NotFoundException;
 import com.example.bank_rest.service.CardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,8 +28,9 @@ public class CardController {
      * @return {@link ResponseEntity}, содержащий один из следующих результатов:
      * <ul>
      *   <li><b>200 OK</b> — если карты найдены, тело содержит {@link CardDTO}</li>
-     *   <li><b>400 Bad Request</b> — в случае если page и size заданы неправльно или в случае если пользователь ненвйден </li>
+     *   <li><b>400 Bad Request</b> — в случае если page и size заданы неправльно </li>
      * </ul>
+     * @throws UsernameNotFoundException - если пользователь не найден!
      */
     @GetMapping("/")
     @Operation(description = "Возвращает карты авторизированного пользователя")
@@ -45,9 +48,9 @@ public class CardController {
      * @return {@link ResponseEntity}, содержащий один из следующих результатов:
      * <ul>
      *   <li><b>200 OK</b> — успешно изменен статус, тело содержит {@link CardDTO}</li>
-     *   <li><b>400 BadRequest</b> —  в случае если карту с таким id не найден </li>
      *   <li><b>403 FORBIDDEN</b> — в случае если карта не принадлежит авторизованному пользователю </li>
      * </ul>
+     * @throws NotFoundException - в случае если карту с таким id не найден
      */
     @PatchMapping("/{id}")
     @Operation(description = "Блокирует карту")
@@ -62,9 +65,9 @@ public class CardController {
      * @return {@link ResponseEntity}, содержащий один из следующих результатов:
      * <ul>
      *   <li><b>200 OK</b> — успешно изменен статус, тело содержит {@link CardDTO}</li>
-     *   <li><b>400 BadRequest</b> —  в случае если карту с таким id не найден </li>
      *   <li><b>403 FORBIDDEN</b> — в случае если карта не принадлежит авторизованному пользователю </li>
      * </ul>
+     * @throws NotFoundException - в случае если карту с таким id не найден
      */
     @GetMapping("/{id}")
     @Operation(description = "Получает данные карты")
@@ -83,7 +86,7 @@ public class CardController {
      *   <li><b>423 Locked</b> — в случае если карта заблокирована </li>
      *   <li><b>402 PAYMENT REQUIRED</b> — в случае если на карте недостоточно средств </li>
      * </ul>
-     * @throws RuntimeException - в случае если карта не найдена, обрабатывается и выдает ошибку (Bad Request)
+     * @throws NotFoundException - в случае если карта не найдена
      */
     @PostMapping("/transactions")
     @Operation(description = "Перевод денег")

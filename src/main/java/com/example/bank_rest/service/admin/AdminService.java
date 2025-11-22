@@ -1,9 +1,7 @@
 package com.example.bank_rest.service.admin;
 
 import com.example.bank_rest.dto.auth.RegistrationAdminDTO;
-import com.example.bank_rest.dto.auth.RegistrationDTO;
 import com.example.bank_rest.entity.User;
-import com.example.bank_rest.repository.RoleRepository;
 import com.example.bank_rest.repository.UserRepository;
 import com.example.bank_rest.service.RoleService;
 import lombok.RequiredArgsConstructor;

@@ -69,6 +69,4 @@ public class AuthController {
     public ResponseEntity<?> createUser(@RequestBody RegistrationAdminDTO registrationAdminDTO){
         return authService.createAdmin(registrationAdminDTO);
     }
-
-
 }

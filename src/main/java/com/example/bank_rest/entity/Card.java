@@ -1,14 +1,14 @@
 package com.example.bank_rest.entity;
 
-import jakarta.annotation.PreDestroy;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "cards")
 public class Card {
 

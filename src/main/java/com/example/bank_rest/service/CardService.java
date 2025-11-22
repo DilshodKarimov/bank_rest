@@ -2,24 +2,23 @@ package com.example.bank_rest.service;
 
 import com.example.bank_rest.dto.card.CardDTO;
 import com.example.bank_rest.dto.card.TransactionsDTO;
-import com.example.bank_rest.dto.card.TransactionsResponseDTO;
 import com.example.bank_rest.entity.Card;
 import com.example.bank_rest.entity.CardStatus;
 import com.example.bank_rest.entity.Transaction;
 import com.example.bank_rest.entity.User;
 import com.example.bank_rest.exception.AppError;
+import com.example.bank_rest.exception.NotFoundException;
 import com.example.bank_rest.repository.CardRepository;
 import com.example.bank_rest.repository.TransactionRepository;
 import com.example.bank_rest.repository.UserRepository;
-import com.example.bank_rest.util.JwtTokenUtils;
-import com.sun.net.httpserver.HttpsServer;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,20 +34,15 @@ public class CardService {
 
     public ResponseEntity<?> getCards(int page, int size){
         if(page <= 0 || size <= 0){
-            String message = "Плохой запрос!";
+            String message = "Плохой запрос c пагинацией!";
             return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        User user;
-        try{
-            user = userRepository.findByUsername(authentication.getName())
-                    .orElseThrow(() -> new RuntimeException("Пользователь не найден!"));
-        }
-        catch (RuntimeException e){
-            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
+        User user= userRepository.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден!"));
+
 
         int left = (page-1)*size;
         int right = page*size-1;
@@ -86,16 +80,8 @@ public class CardService {
     public ResponseEntity<?> responseBlockCard(Long id){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Card card;
-
-        try {
-            card = cardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Карта с таким id не найден"));
-        }
-        catch (RuntimeException e){
-            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
-
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Карта с таким id не найден"));
 
         if(!card.getUser().getUsername().equals(authentication.getName())){
             String message = "Недостаточно прав для доступа к ресурсу";
@@ -111,14 +97,9 @@ public class CardService {
     public ResponseEntity<?> getCardById(Long id){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Card card;
-        try{
-             card = cardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Карта с таким id не найден!"));
-        }
-        catch (RuntimeException e){
-            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Карта с таким id не найден!"));
+
 
         if(!card.getUser().getUsername().equals(authentication.getName())){
             String message = "Недостаточно прав для доступа к ресурсу";
@@ -130,29 +111,25 @@ public class CardService {
     }
 
 
+    @Transactional
     public ResponseEntity<?> transactions(TransactionsDTO transactionsDTO){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        Card fromCard;
+        Card fromCard =  cardRepository.findById(transactionsDTO.getFromId())
+                .orElseThrow(() -> new NotFoundException("Карта с таким id не найден!"));
+
 
         Card toCard;
 
-
-        try {
-            fromCard = cardRepository.findById(transactionsDTO.getFromId())
-                    .orElseThrow(() -> new RuntimeException("Карта с таким id не найден!"));
-
-            if (transactionsDTO.getToId() == -1) {
-                toCard = cardRepository.findByCardNumber(transactionsDTO.getToCardNumber())
-                        .orElseThrow(() -> new RuntimeException("Карта с таким номером не найден!"));
-            } else {
-                toCard = cardRepository.findById(transactionsDTO.getToId())
-                        .orElseThrow(() -> new RuntimeException("Карта на id которую хотите перевести, не найден!"));
-            }
+        if (transactionsDTO.getToId() == -1) {
+            toCard = cardRepository.findByCardNumber(transactionsDTO.getToCardNumber())
+                    .orElseThrow(() -> new NotFoundException("Карта с таким номером не найден!"));
+        } else {
+            toCard = cardRepository.findById(transactionsDTO.getToId())
+                    .orElseThrow(() -> new NotFoundException("Карта на id которую хотите перевести, не найден!"));
         }
-        catch (RuntimeException e){
-            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), e.getMessage()), HttpStatus.BAD_REQUEST);
-        }
+
+
 
         if(!fromCard.getUser().getUsername().equals(authentication.getName())){
             String message = "Недостаточно прав для доступа к ресурсу";

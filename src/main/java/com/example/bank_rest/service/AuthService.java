@@ -8,7 +8,6 @@ import com.example.bank_rest.dto.user.UserDTO;
 import com.example.bank_rest.entity.User;
 import com.example.bank_rest.exception.AppError;
 import com.example.bank_rest.service.admin.AdminService;
-import com.example.bank_rest.service.admin.AdminUserService;
 import com.example.bank_rest.util.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

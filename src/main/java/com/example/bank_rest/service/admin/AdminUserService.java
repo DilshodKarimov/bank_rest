@@ -1,26 +1,20 @@
 package com.example.bank_rest.service.admin;
 
-import com.example.bank_rest.entity.Card;
 import com.example.bank_rest.entity.User;
 import com.example.bank_rest.exception.AppError;
-import com.example.bank_rest.repository.CardRepository;
 import com.example.bank_rest.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AdminUserService {
 
     private final UserRepository userRepository;
-
 
     public ResponseEntity<?> getUsers(int page, int size){
         if(page <= 0 || size <= 0){
@@ -31,10 +25,10 @@ public class AdminUserService {
         int left = (page-1)*size;
         int right = page*size-1;
 
-        List<User> cards = userRepository.findAll();
+        List<User> users = userRepository.findAll();
 
-        if(cards.size() < right){
-            right = cards.size();
+        if(users.size() < right){
+            right = users.size();
             left = right-size-1;
         }
 
@@ -45,10 +39,6 @@ public class AdminUserService {
             return ResponseEntity.ok(null);
         }
 
-        return ResponseEntity.ok(cards.subList(left, right));
+        return ResponseEntity.ok(users.subList(left, right));
     }
-
-
-
-
 }

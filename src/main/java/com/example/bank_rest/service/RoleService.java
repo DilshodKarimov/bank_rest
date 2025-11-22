@@ -3,7 +3,6 @@ package com.example.bank_rest.service;
 
 import com.example.bank_rest.entity.Role;
 import com.example.bank_rest.repository.RoleRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,12 +1,14 @@
 package com.example.bank_rest.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Setter
+@Getter
 @Table(name = "transactions")
 public class Transaction {
     @Id
