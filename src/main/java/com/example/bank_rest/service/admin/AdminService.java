@@ -19,12 +19,6 @@ public class AdminService {
     private final BCryptPasswordEncoder passwordEncoder;
 
     public User createNewAdmin(RegistrationAdminDTO registrationDTO){
-
-
-        if(!registrationDTO.getCode().equals("5432")){
-            return null;
-        }
-
         User user = new User();
 
         user.setUsername(registrationDTO.getUsername());

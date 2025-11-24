@@ -1,11 +1,8 @@
 package com.example.bank_rest.service.admin;
 
 import com.example.bank_rest.entity.User;
-import com.example.bank_rest.exception.AppError;
 import com.example.bank_rest.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,12 +13,7 @@ public class AdminUserService {
 
     private final UserRepository userRepository;
 
-    public ResponseEntity<?> getUsers(int page, int size){
-        if(page <= 0 || size <= 0){
-            String message = "Плохой запрос!";
-            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
-        }
-
+    public List<User> getUsers(int page, int size){
         int left = (page-1)*size;
         int right = page*size-1;
 
@@ -36,9 +28,9 @@ public class AdminUserService {
             left = 0;
         }
         if(right == -1){
-            return ResponseEntity.ok(null);
+            return null;
         }
 
-        return ResponseEntity.ok(users.subList(left, right));
+        return users.subList(left, right);
     }
 }

@@ -8,19 +8,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class AuthControllerTest {
-
     @Autowired
     private MockMvc mockMvc;
-
-
-
     @Test // register a new user
     void createUser() throws Exception{
         String requestBody = """
@@ -58,8 +53,6 @@ class AuthControllerTest {
                         .content(requestBody))
                 .andExpect(status().isBadRequest());
     }
-
-
     @Test // auth a new user with bad password
     void createAuthToken1() throws Exception{
         String requestBody = """
@@ -73,7 +66,6 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isUnauthorized());
-
     }
 
     @Test // auth a new user with bad username and password

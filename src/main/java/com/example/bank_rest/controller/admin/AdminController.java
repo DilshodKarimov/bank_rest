@@ -4,11 +4,16 @@ import com.example.bank_rest.dto.card.CardDTO;
 import com.example.bank_rest.dto.card.CardStatusDTO;
 import com.example.bank_rest.dto.card.CreateCardDTO;
 import com.example.bank_rest.dto.card.DeleteResponseDTO;
+import com.example.bank_rest.entity.Card;
+import com.example.bank_rest.entity.CardStatus;
+import com.example.bank_rest.exception.AppError;
 import com.example.bank_rest.exception.NotFoundException;
+import com.example.bank_rest.repository.CardRepository;
 import com.example.bank_rest.service.admin.AdminCardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     private final AdminCardService adminCardService;
+    private final CardRepository cardRepository;
 
     /**
      * Возращает карты пользователя с пагинацией
@@ -37,7 +43,13 @@ public class AdminController {
     public ResponseEntity<?> getCards(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue =  "10") int size){
-        return adminCardService.getCards(page, size);
+
+        if(page <= 0 || size <= 0){
+            String message = "Плохой запрос!";
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok(adminCardService.getCards(page, size));
     }
 
 
@@ -51,7 +63,7 @@ public class AdminController {
     @GetMapping("/{id}")
     @Operation(description = "Получает данные карты с поммощью айди")
     public ResponseEntity<?> getCardById(@PathVariable("id") Long id){
-        return adminCardService.getCardById(id);
+        return ResponseEntity.ok(adminCardService.getCardById(id));
     }
 
     /**
@@ -69,7 +81,19 @@ public class AdminController {
     @PatchMapping("/{id}")
     @Operation(description = "Изменяет статус карты, если хотите продлить нужно указать дату окончания")
     public ResponseEntity<?> changeStatus(@PathVariable("id") Long id, @RequestBody CardStatusDTO cardStatusDTO){
-        return adminCardService.changeStatus(id, cardStatusDTO);
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Карта с таким id не существует!"));
+
+        if(card.getStatus() == CardStatus.EXPIRED && cardStatusDTO.getStatus() == CardStatus.ACTIVE){
+            if(cardStatusDTO.getExpiryDate() == null){
+                String message = "Для того чтобы продлить карту нужно указать новый срок карты!";
+                return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
+            }
+            card.setExpiryDate(cardStatusDTO.getExpiryDate());
+        }
+        card.setStatus(cardStatusDTO.getStatus());
+
+        return ResponseEntity.ok(adminCardService.changeStatus(card));
     }
 
     /**
@@ -82,7 +106,7 @@ public class AdminController {
     @DeleteMapping("/{id}")
     @Operation(description = "Удаляет карту")
     public ResponseEntity<?> deleteCard(@PathVariable("id") Long id){
-        return adminCardService.deleteCard(id);
+        return ResponseEntity.ok(adminCardService.deleteCard(id));
     }
 
 
@@ -96,7 +120,7 @@ public class AdminController {
     @GetMapping("/{id}/user")
     @Operation(description = "Вернет пользователя с помощью айди карты")
     public ResponseEntity<?> getUserByCardId(@PathVariable("id") Long id){
-        return adminCardService.getUserByCardId(id);
+        return ResponseEntity.ok(adminCardService.getUserByCardId(id));
     }
 
     /**
@@ -116,7 +140,12 @@ public class AdminController {
     public ResponseEntity<?> getCardByUserId(@PathVariable("id") Long id,
                                              @RequestParam(defaultValue = "1") int page,
                                              @RequestParam(defaultValue = "10") int size){
-        return adminCardService.getCardByUserId(id, page, size);
+        if(page <= 0 || size <= 0){
+            String message = "Плохой запрос c пагинацией!";
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok(adminCardService.getCardByUserId(id, page, size));
     }
 
     /**
@@ -129,7 +158,7 @@ public class AdminController {
     @PostMapping("/create")
     @Operation(description = "Создает пользователю карту")
     public ResponseEntity<?> createCard(@RequestBody CreateCardDTO createCardDTO){
-        return adminCardService.createCard(createCardDTO);
+        return ResponseEntity.ok(adminCardService.createCard(createCardDTO));
     }
 
 

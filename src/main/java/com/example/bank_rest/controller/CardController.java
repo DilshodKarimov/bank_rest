@@ -2,12 +2,21 @@ package com.example.bank_rest.controller;
 
 import com.example.bank_rest.dto.card.CardDTO;
 import com.example.bank_rest.dto.card.TransactionsDTO;
+import com.example.bank_rest.entity.Card;
+import com.example.bank_rest.entity.CardStatus;
+import com.example.bank_rest.entity.User;
+import com.example.bank_rest.exception.AppError;
 import com.example.bank_rest.exception.NotFoundException;
+import com.example.bank_rest.repository.CardRepository;
+import com.example.bank_rest.repository.UserRepository;
 import com.example.bank_rest.service.CardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +27,8 @@ import org.springframework.web.bind.annotation.*;
 public class CardController {
 
     private final CardService cardService;
-
+    private final CardRepository cardRepository;
+    private final UserRepository userRepository;
 
     /**
      * Возращает карты пользователя с пагинацией
@@ -38,7 +48,17 @@ public class CardController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size){
 
-        return cardService.getCards(page, size);
+        if(page <= 0 || size <= 0){
+            String message = "Плохой запрос c пагинацией!";
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        User user= userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден!"));
+
+        return ResponseEntity.ok(cardService.getCards(page, size, user));
     }
 
     /**
@@ -55,7 +75,17 @@ public class CardController {
     @PatchMapping("/{id}")
     @Operation(description = "Блокирует карту")
     public ResponseEntity<?> blockCard(@PathVariable("id") Long id){
-        return cardService.responseBlockCard(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Карта с таким id не найден"));
+
+        if(!card.getUser().getUsername().equals(authentication.getName())){
+            String message = "Недостаточно прав для доступа к ресурсу";
+            return new ResponseEntity<>(new AppError(HttpStatus.FORBIDDEN.value(), message), HttpStatus.FORBIDDEN);
+        }
+
+        return ResponseEntity.ok(cardService.responseBlockCard(card));
     }
 
     /**
@@ -72,7 +102,17 @@ public class CardController {
     @GetMapping("/{id}")
     @Operation(description = "Получает данные карты")
     public ResponseEntity<?> getCardById(@PathVariable("id") Long id){
-        return cardService.getCardById(id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Card card = cardRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Карта с таким id не найден!"));
+
+        if(!card.getUser().getUsername().equals(authentication.getName())){
+            String message = "Недостаточно прав для доступа к ресурсу";
+            return new ResponseEntity<>(new AppError(HttpStatus.FORBIDDEN.value(), message), HttpStatus.FORBIDDEN);
+        }
+
+        return ResponseEntity.ok(cardService.getCardById(card));
     }
 
 
@@ -91,6 +131,51 @@ public class CardController {
     @PostMapping("/transactions")
     @Operation(description = "Перевод денег")
     public ResponseEntity<?> transactions(@RequestBody TransactionsDTO transactionsDTO){
-        return cardService.transactions(transactionsDTO);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        Card fromCard =  cardRepository.findById(transactionsDTO.getFromId())
+                .orElseThrow(() -> new NotFoundException("Карта с таким id не найден!"));
+
+        Card toCard;
+
+        if (transactionsDTO.getToId() == -1) {
+            toCard = cardRepository.findByCardNumber(transactionsDTO.getToCardNumber())
+                    .orElseThrow(() -> new NotFoundException("Карта с таким номером не найден!"));
+        } else {
+            toCard = cardRepository.findById(transactionsDTO.getToId())
+                    .orElseThrow(() -> new NotFoundException("Карта на id которую хотите перевести, не найден!"));
+        }
+
+        if(!fromCard.getUser().getUsername().equals(authentication.getName())){
+            String message = "Недостаточно прав для доступа к ресурсу";
+            return new ResponseEntity<>(new AppError(HttpStatus.FORBIDDEN.value(), message), HttpStatus.FORBIDDEN);
+        }
+
+        if(fromCard.getStatus() != CardStatus.ACTIVE) {
+            if (fromCard.getStatus() == CardStatus.BLOCKED) {
+                String message = "Ваша карта заблокирована. Обратитесь в банк!";
+                return new ResponseEntity<>(new AppError(HttpStatus.LOCKED.value(), message), HttpStatus.LOCKED);
+            } else {
+                String message = "Ваша карта истекла. Обратитесь в банк!";
+                return new ResponseEntity<>(new AppError(HttpStatus.GONE.value(), message), HttpStatus.GONE);
+            }
+        }
+
+        if(toCard.getStatus() != CardStatus.ACTIVE) {
+            if (toCard.getStatus() == CardStatus.BLOCKED) {
+                String message = "Карта к которую хотите отправить деньги заблокирована!";
+                return new ResponseEntity<>(new AppError(HttpStatus.LOCKED.value(), message), HttpStatus.LOCKED);
+            } else {
+                String message = "Карта к которую хотите отправить деньги срок действия истек!";
+                return new ResponseEntity<>(new AppError(HttpStatus.GONE.value(), message), HttpStatus.GONE);
+            }
+        }
+
+        if(fromCard.getBalance() - transactionsDTO.getAmount() < 0){
+            String message = "Недостоточно средств";
+            return new ResponseEntity<>(new AppError(HttpStatus.PAYMENT_REQUIRED.value(), message), HttpStatus.PAYMENT_REQUIRED);
+        }
+
+        return ResponseEntity.ok(cardService.transactions(transactionsDTO, fromCard, toCard));
     }
 }

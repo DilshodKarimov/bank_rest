@@ -24,7 +24,7 @@ public class UserService implements UserDetailsService {
     private final RoleService roleService;
     private final PasswordEncoder passwordEncoder;
 
-    Optional<User> findByUsername(String username){
+    public Optional<User> findByUsername(String username){
         return userRepository.findByUsername(username);
     }
 
@@ -43,7 +43,6 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(
                 String.format("Пользователь '%s' не найден", username)));
-
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),

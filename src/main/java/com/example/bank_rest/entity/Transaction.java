@@ -37,8 +37,5 @@ public class Transaction {
         this.toCardId = toCardId;
         this.description = description;
         this.createdAt = LocalDateTime.now();
-
     }
-
-
 }

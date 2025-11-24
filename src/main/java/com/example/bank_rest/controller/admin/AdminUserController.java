@@ -1,11 +1,10 @@
 package com.example.bank_rest.controller.admin;
 
-import com.example.bank_rest.dto.card.CardDTO;
+import com.example.bank_rest.exception.AppError;
 import com.example.bank_rest.service.admin.AdminUserService;
-import com.fasterxml.jackson.core.PrettyPrinter;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,7 +32,11 @@ public class AdminUserController {
     public ResponseEntity<?> getUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue =  "10") int size){
-        return adminUserService.getUsers(page, size);
+        if(page <= 0 || size <= 0){
+            String message = "Плохой запрос!";
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.ok(adminUserService.getUsers(page, size));
     }
 
     /**
@@ -44,8 +47,8 @@ public class AdminUserController {
      */
     @GetMapping("/{id}")
     @Operation(description = "Переносит вас в /admin/card/user/")
-    public String getUsersCard(@PathVariable("id") Long id){
-        return "redirect:/admin/card/user/" + id.toString();
+    public ResponseEntity<String> getUsersCard(@PathVariable("id") Long id){
+        return ResponseEntity.ok("redirect:/admin/card/user/" + id.toString());
     }
 
 }

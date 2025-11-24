@@ -3,11 +3,17 @@ package com.example.bank_rest.controller;
 import com.example.bank_rest.dto.auth.RegistrationAdminDTO;
 import com.example.bank_rest.dto.auth.RegistrationDTO;
 import com.example.bank_rest.dto.jwt.JwtRequestDTO;
+import com.example.bank_rest.exception.AppError;
 import com.example.bank_rest.service.AuthService;
+import com.example.bank_rest.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import com.example.bank_rest.dto.user.UserDTO;
 import com.example.bank_rest.dto.jwt.JwtResponseDTO;
@@ -19,6 +25,8 @@ import com.example.bank_rest.dto.jwt.JwtResponseDTO;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
 
     /**
      * Регистрирует пользоватля
@@ -33,7 +41,18 @@ public class AuthController {
     @PostMapping("/registration")
     @Operation(summary = "Регистрация")
     public ResponseEntity<?> createUser(@RequestBody RegistrationDTO registrationDTO){
-        return authService.createUser(registrationDTO);
+
+        if(!registrationDTO.getPassword().equals(registrationDTO.getConfirmPassword())){
+            String message = "Пароли не совподают";
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
+        }
+
+        if(userService.findByUsername(registrationDTO.getUsername()).isPresent()){
+            String message = "Пользователь с таким именем существует!";
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
+        }
+
+        return ResponseEntity.ok(authService.createUser(registrationDTO));
     }
 
 
@@ -50,7 +69,20 @@ public class AuthController {
     @PostMapping("/auth")
     @Operation(summary = "Авторизация")
     public ResponseEntity<?> createAuthToken(@RequestBody JwtRequestDTO jwtRequestDTO){
-        return authService.createAuthToken(jwtRequestDTO);
+
+        try{
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(jwtRequestDTO.getUsername(), jwtRequestDTO.getPassword()));
+        }
+        catch (BadCredentialsException e){
+            String message = "Неправильный логин или пароль!";
+            return  new ResponseEntity<>(new AppError(HttpStatus.UNAUTHORIZED.value(),message), HttpStatus.UNAUTHORIZED);
+        }
+        catch (RuntimeException e){
+            String message = "Неправильный логин или пароль!";
+            return  new ResponseEntity<>(new AppError(HttpStatus.UNAUTHORIZED.value(),message), HttpStatus.UNAUTHORIZED);
+        }
+
+        return ResponseEntity.ok(authService.createAuthToken(jwtRequestDTO));
     }
 
     /**
@@ -67,6 +99,22 @@ public class AuthController {
     @PostMapping("/registration-admin")
     @Operation(summary = "Создает админа, но нужно ввести код")
     public ResponseEntity<?> createUser(@RequestBody RegistrationAdminDTO registrationAdminDTO){
-        return authService.createAdmin(registrationAdminDTO);
+
+        if(!registrationAdminDTO.getPassword().equals(registrationAdminDTO.getConfirmPassword())){
+            String message = "Пароли не совподают";
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
+        }
+
+        if(userService.findByUsername(registrationAdminDTO.getUsername()).isPresent()){
+            String message = "Пользователь с таким именем существует!";
+            return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
+        }
+
+        if(!registrationAdminDTO.getCode().equals("5432")){
+            String message = "Мало прав!!!";
+            return new ResponseEntity<>(new AppError(HttpStatus.FORBIDDEN.value(), message), HttpStatus.FORBIDDEN);
+        }
+
+        return ResponseEntity.ok(authService.createAdmin(registrationAdminDTO));
     }
 }

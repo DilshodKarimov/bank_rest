@@ -12,7 +12,6 @@ public class RoleService {
 
     private final RoleRepository roleRepository;
 
-
     private void createRoleIfNotExists(String roleName){
         if(!roleRepository.findByName(roleName).isPresent()){
             Role role = new Role();
