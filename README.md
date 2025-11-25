@@ -16,7 +16,7 @@
 - Управление схемой базы данных через **Liquibase**
 - Документация API через **Springdoc OpenAPI / Swagger**
 - Возможность запуска через **Docker Compose**
-- Тесты с использованием **JUnit 5**
+- Модульные и интеграционные тесты **JUnit 5**
 ---
 
 ## ⚙️ Требования
@@ -68,7 +68,6 @@ YAML спецификация OpenAPI: http://localhost:8080/v3/api-docs.yaml
 
 4. Запуситить тесты:
 ```bash
-docker compose build
 docker compose up spring-tests
 # или 
 mvn test 

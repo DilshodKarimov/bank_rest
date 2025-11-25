@@ -69,7 +69,7 @@ public class AdminCardService {
         return redirect;
     }
 
-    public List<Card> getCardByUserId(Long id, int page, int size){
+    public List<Card> getCardsByUserId(Long id, int page, int size){
 
         int left = (page-1)*size;
         int right = page*size-1;

@@ -145,7 +145,7 @@ public class AdminController {
             return new ResponseEntity<>(new AppError(HttpStatus.BAD_REQUEST.value(), message), HttpStatus.BAD_REQUEST);
         }
 
-        return ResponseEntity.ok(adminCardService.getCardByUserId(id, page, size));
+        return ResponseEntity.ok(adminCardService.getCardsByUserId(id, page, size));
     }
 
     /**
