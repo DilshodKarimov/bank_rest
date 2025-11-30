@@ -2,7 +2,6 @@ package com.example.bank_rest.config;
 
 import com.example.bank_rest.util.JwtTokenUtils;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtTokenUtils jwtTokenUtils;
-
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

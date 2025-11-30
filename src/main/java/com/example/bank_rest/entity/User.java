@@ -37,4 +37,10 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Collection<Role> roles;
+
+    public User (){}
+    public User (Long id, String username){
+        this.id = id;
+        this.username = username;
+    }
 }

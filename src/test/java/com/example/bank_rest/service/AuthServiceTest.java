@@ -1,12 +1,10 @@
 package com.example.bank_rest.service;
 
-import com.example.bank_rest.dto.auth.RegistrationAdminDTO;
 import com.example.bank_rest.dto.auth.RegistrationDTO;
 import com.example.bank_rest.dto.jwt.JwtRequestDTO;
 import com.example.bank_rest.dto.jwt.JwtResponseDTO;
 import com.example.bank_rest.dto.user.UserDTO;
 import com.example.bank_rest.entity.User;
-import com.example.bank_rest.repository.UserRepository;
 import com.example.bank_rest.service.admin.AdminService;
 import com.example.bank_rest.util.JwtTokenUtils;
 import org.junit.jupiter.api.Test;
@@ -18,7 +16,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -48,7 +46,7 @@ class AuthServiceTest {
 
         when(userService.createNewUser(registrationDTO)).thenReturn(user);
 
-        assertTrue(authService.createUser(registrationDTO) instanceof UserDTO);
+        assertTrue(authService.registration(registrationDTO) instanceof UserDTO);
     }
 
     @Test
@@ -74,20 +72,8 @@ class AuthServiceTest {
         when(userService.loadUserByUsername(jwtRequestDTO.getUsername())).thenReturn(userDetails);
         when(jwtTokenUtils.generateToken(any(UserDetails.class))).thenReturn("123");
 
-        assertTrue(authService.createAuthToken(jwtRequestDTO) instanceof JwtResponseDTO);
+        assertTrue(authService.login(jwtRequestDTO) instanceof JwtResponseDTO);
     }
 
-    @Test
-    void createAdmin() {
-        RegistrationAdminDTO registrationAdminDTO = new RegistrationAdminDTO("Alex2", "123", "123", "5432");
 
-        User user = new User();
-
-        user.setId(1L);
-        user.setUsername("Alex2");
-
-        when(adminService.createNewAdmin(registrationAdminDTO)).thenReturn(user);
-
-        assertTrue(authService.createAdmin(registrationAdminDTO) instanceof UserDTO);
-    }
 }

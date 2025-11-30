@@ -1,6 +1,5 @@
 package com.example.bank_rest.util;
 
-import com.example.bank_rest.entity.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

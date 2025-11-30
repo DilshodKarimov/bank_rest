@@ -1,9 +1,7 @@
 package com.example.bank_rest.controller;
 
 import com.example.bank_rest.dto.card.CardDTO;
-import com.example.bank_rest.dto.card.TransactionsDTO;
 import com.example.bank_rest.entity.Card;
-import com.example.bank_rest.entity.CardStatus;
 import com.example.bank_rest.entity.User;
 import com.example.bank_rest.exception.AppError;
 import com.example.bank_rest.exception.NotFoundException;
@@ -72,7 +70,7 @@ public class CardController {
      * </ul>
      * @throws NotFoundException - в случае если карту с таким id не найден
      */
-    @PatchMapping("/{id}")
+    @PostMapping("/{id}/block")
     @Operation(description = "Блокирует карту")
     public ResponseEntity<?> blockCard(@PathVariable("id") Long id){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -85,7 +83,7 @@ public class CardController {
             return new ResponseEntity<>(new AppError(HttpStatus.FORBIDDEN.value(), message), HttpStatus.FORBIDDEN);
         }
 
-        return ResponseEntity.ok(cardService.responseBlockCard(card));
+        return ResponseEntity.ok(cardService.blockCard(card));
     }
 
     /**
@@ -112,70 +110,8 @@ public class CardController {
             return new ResponseEntity<>(new AppError(HttpStatus.FORBIDDEN.value(), message), HttpStatus.FORBIDDEN);
         }
 
-        return ResponseEntity.ok(cardService.getCardById(card));
+        return ResponseEntity.ok(cardService.getCard(card));
     }
 
 
-    /**
-     * @param transactionsDTO - данные для транзакции
-     * @return {@link ResponseEntity}, содержащий один из следующих результатов:
-     * <ul>
-     *   <li><b>200 OK</b> — успешно изменен статус, тело содержит {@link CardDTO}</li>
-     *   <li><b>403 FORBIDDEN</b> — в случае если карта не принадлежит авторизованному пользователю </li>
-     *   <li><b>410 Gone</b> — в случае если карта истекла </li>
-     *   <li><b>423 Locked</b> — в случае если карта заблокирована </li>
-     *   <li><b>402 PAYMENT REQUIRED</b> — в случае если на карте недостоточно средств </li>
-     * </ul>
-     * @throws NotFoundException - в случае если карта не найдена
-     */
-    @PostMapping("/transactions")
-    @Operation(description = "Перевод денег")
-    public ResponseEntity<?> transactions(@RequestBody TransactionsDTO transactionsDTO){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        Card fromCard =  cardRepository.findById(transactionsDTO.getFromId())
-                .orElseThrow(() -> new NotFoundException("Карта с таким id не найден!"));
-
-        Card toCard;
-
-        if (transactionsDTO.getToId() == -1) {
-            toCard = cardRepository.findByCardNumber(transactionsDTO.getToCardNumber())
-                    .orElseThrow(() -> new NotFoundException("Карта с таким номером не найден!"));
-        } else {
-            toCard = cardRepository.findById(transactionsDTO.getToId())
-                    .orElseThrow(() -> new NotFoundException("Карта на id которую хотите перевести, не найден!"));
-        }
-
-        if(!fromCard.getUser().getUsername().equals(authentication.getName())){
-            String message = "Недостаточно прав для доступа к ресурсу";
-            return new ResponseEntity<>(new AppError(HttpStatus.FORBIDDEN.value(), message), HttpStatus.FORBIDDEN);
-        }
-
-        if(fromCard.getStatus() != CardStatus.ACTIVE) {
-            if (fromCard.getStatus() == CardStatus.BLOCKED) {
-                String message = "Ваша карта заблокирована. Обратитесь в банк!";
-                return new ResponseEntity<>(new AppError(HttpStatus.LOCKED.value(), message), HttpStatus.LOCKED);
-            } else {
-                String message = "Ваша карта истекла. Обратитесь в банк!";
-                return new ResponseEntity<>(new AppError(HttpStatus.GONE.value(), message), HttpStatus.GONE);
-            }
-        }
-
-        if(toCard.getStatus() != CardStatus.ACTIVE) {
-            if (toCard.getStatus() == CardStatus.BLOCKED) {
-                String message = "Карта к которую хотите отправить деньги заблокирована!";
-                return new ResponseEntity<>(new AppError(HttpStatus.LOCKED.value(), message), HttpStatus.LOCKED);
-            } else {
-                String message = "Карта к которую хотите отправить деньги срок действия истек!";
-                return new ResponseEntity<>(new AppError(HttpStatus.GONE.value(), message), HttpStatus.GONE);
-            }
-        }
-
-        if(fromCard.getBalance() - transactionsDTO.getAmount() < 0){
-            String message = "Недостоточно средств";
-            return new ResponseEntity<>(new AppError(HttpStatus.PAYMENT_REQUIRED.value(), message), HttpStatus.PAYMENT_REQUIRED);
-        }
-
-        return ResponseEntity.ok(cardService.transactions(transactionsDTO, fromCard, toCard));
-    }
 }

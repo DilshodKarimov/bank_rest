@@ -1,18 +1,14 @@
 package com.example.bank_rest.service;
 
 import com.example.bank_rest.dto.auth.RegistrationDTO;
-import com.example.bank_rest.dto.user.UserDTO;
 import com.example.bank_rest.entity.Role;
 import com.example.bank_rest.entity.User;
-import com.example.bank_rest.repository.RoleRepository;
 import com.example.bank_rest.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;

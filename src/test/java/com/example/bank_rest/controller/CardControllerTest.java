@@ -2,7 +2,6 @@ package com.example.bank_rest.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.internal.filter.ValueNodes;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -60,17 +58,10 @@ class CardControllerTest {
         // регистрируем админа и сразу авторизуем и создадим карту для пользователя3
         String requestBodyForAdmin = """
             {
-                "username": "admin1",
-                "password": "1",
-                "confirmPassword": "1",
-                "code": "5432"
+                "username": "admin",
+                "password": "admin123"
             }
         """;
-
-        mockMvc.perform(post("/registration-admin")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(requestBodyForAdmin))
-                .andExpect(status().isOk());
 
         MvcResult resultAdmin = mockMvc.perform(post("/auth")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -86,6 +77,7 @@ class CardControllerTest {
                 {
                     "expired": "2026-11-01",
                     "username": "user3",
+                    
                     "balance": "10001"
                 }
                 """;

@@ -15,7 +15,6 @@ public class AdminUserController {
 
     private final AdminUserService adminUserService;
 
-
     /**
      * Возвращает всех пользователей
      *

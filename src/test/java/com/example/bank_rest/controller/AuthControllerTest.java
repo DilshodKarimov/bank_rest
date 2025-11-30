@@ -83,20 +83,4 @@ class AuthControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    @Test // register a new admin
-    void testCreateUser() throws Exception {
-        String requestBodyForAdmin = """
-            {
-                "username": "admin",
-                "password": "10",
-                "confirmPassword": "10",
-                "code": "5432"
-            }
-        """;
-
-        mockMvc.perform(post("/registration-admin")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBodyForAdmin))
-                .andExpect(status().isOk());
-    }
 }

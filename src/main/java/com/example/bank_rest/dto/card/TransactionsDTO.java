@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 public class TransactionsDTO {
     private Long fromId;
     private Long toId;
-    private String toCardNumber;
     private String description;
     private Long amount;
 }

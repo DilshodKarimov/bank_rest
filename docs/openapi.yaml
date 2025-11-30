@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.1.0
 info:
   title: Bank RestAPI
   description: Документация API для Bank rest
@@ -10,13 +10,15 @@ tags:
   description: Работа с картами
 - name: AuthController
   description: Контроллер для регистрации и авторизации
+- name: TransactionController
+  description: Работа с транзакциями
 paths:
   /registration:
     post:
       tags:
       - AuthController
       summary: Регистрация
-      operationId: createUser
+      operationId: registration
       requestBody:
         content:
           application/json:
@@ -30,18 +32,19 @@ paths:
             '*/*':
               schema:
                 type: object
-  /registration-admin:
+  /card/{id}/block:
     post:
       tags:
-      - AuthController
-      summary: Создает админа, но нужно ввести код
-      operationId: createUser_1
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RegistrationAdminDTO"
+      - CardController
+      description: Блокирует карту
+      operationId: blockCard
+      parameters:
+      - name: id
+        in: path
         required: true
+        schema:
+          type: integer
+          format: int64
       responses:
         "200":
           description: OK
@@ -52,7 +55,7 @@ paths:
   /card/transactions:
     post:
       tags:
-      - CardController
+      - TransactionController
       description: Перевод денег
       operationId: transactions
       requestBody:
@@ -73,7 +76,7 @@ paths:
       tags:
       - AuthController
       summary: Авторизация
-      operationId: createAuthToken
+      operationId: login
       requestBody:
         content:
           application/json:
@@ -87,10 +90,29 @@ paths:
             '*/*':
               schema:
                 type: object
+  /admin/registration:
+    post:
+      tags:
+      - admin-controller
+      summary: Создает админа
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationAdminDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
   /admin/card/create:
     post:
       tags:
-      - AdminController
+      - AdminCardController
       description: Создает пользователю карту
       operationId: createCard
       requestBody:
@@ -106,51 +128,12 @@ paths:
             '*/*':
               schema:
                 type: object
-  /card/{id}:
-    get:
-      tags:
-      - CardController
-      description: Получает данные карты
-      operationId: getCardById
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-    patch:
-      tags:
-      - CardController
-      description: Блокирует карту
-      operationId: blockCard
-      parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
   /admin/card/{id}:
     get:
       tags:
-      - AdminController
+      - AdminCardController
       description: Получает данные карты с поммощью айди
-      operationId: getCardById_1
+      operationId: getCardById
       parameters:
       - name: id
         in: path
@@ -167,7 +150,7 @@ paths:
                 type: object
     delete:
       tags:
-      - AdminController
+      - AdminCardController
       description: Удаляет карту
       operationId: deleteCard
       parameters:
@@ -186,7 +169,7 @@ paths:
                 type: object
     patch:
       tags:
-      - AdminController
+      - AdminCardController
       description: "Изменяет статус карты, если хотите продлить нужно указать дату\
         \ окончания"
       operationId: changeStatus
@@ -197,11 +180,32 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: cardStatusDTO
-        in: query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CardStatusDTO"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /card/{id}:
+    get:
+      tags:
+      - CardController
+      description: Получает данные карты
+      operationId: getCardById_1
+      parameters:
+      - name: id
+        in: path
         required: true
         schema:
-          $ref: "#/components/schemas/CardStatusDTO"
+          type: integer
+          format: int64
       responses:
         "200":
           description: OK
@@ -263,6 +267,21 @@ paths:
       - admin-user-controller
       description: Получает всех пользователей и админов
       operationId: getUsers
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 1
+      - name: size
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int32
+          default: 10
       responses:
         "200":
           description: OK
@@ -273,8 +292,8 @@ paths:
   /admin/card/{id}/user:
     get:
       tags:
-      - AdminController
-      description: "Вернет пользователя с помощью айди карты"
+      - AdminCardController
+      description: Вернет пользователя с помощью айди карты
       operationId: getUserByCardId
       parameters:
       - name: id
@@ -289,12 +308,12 @@ paths:
           content:
             '*/*':
               schema:
-                type: string
+                type: object
   /admin/card/user/{id}:
     get:
       tags:
-      - AdminController
-      description: "Вернеет карты пользователя"
+      - AdminCardController
+      description: Вернеет карты пользователя
       operationId: getCardByUserId
       parameters:
       - name: id
@@ -327,7 +346,7 @@ paths:
   /admin/card/:
     get:
       tags:
-      - AdminController
+      - AdminCardController
       description: Возвращает все карты
       operationId: getCards
       parameters:
@@ -363,25 +382,19 @@ components:
           type: string
         confirmPassword:
           type: string
-    RegistrationAdminDTO:
-      type: object
-      properties:
-        username:
-          type: string
-        password:
-          type: string
-        confirmPassword:
-          type: string
-        code:
-          type: string
+      required:
+      - confirmPassword
+      - password
+      - username
     TransactionsDTO:
       type: object
       properties:
         fromId:
           type: integer
           format: int64
-        toCardNumber:
-          type: string
+        toId:
+          type: integer
+          format: int64
         description:
           type: string
         amount:
@@ -394,14 +407,23 @@ components:
           type: string
         password:
           type: string
+    RegistrationAdminDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        confirmPassword:
+          type: string
     CreateCardDTO:
       type: object
       properties:
+        username:
+          type: string
         expired:
           type: string
           format: date
-        username:
-          type: string
         balance:
           type: integer
           format: int64

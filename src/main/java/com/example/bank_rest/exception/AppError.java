@@ -2,7 +2,6 @@ package com.example.bank_rest.exception;
 
 
 import lombok.Data;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 
 import java.util.Date;
 
